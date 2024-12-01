@@ -1,0 +1,6 @@
+E:\Code\C#\AoC2024\AoC2024\bin\Debug\AoC2024.exe
+E:\Code\C#\AoC2024\AoC2024\bin\Debug\AoC2024.pdb
+E:\Code\C#\AoC2024\AoC2024\obj\Debug\AoC2024.csproj.AssemblyReference.cache
+E:\Code\C#\AoC2024\AoC2024\obj\Debug\AoC2024.csproj.CoreCompileInputs.cache
+E:\Code\C#\AoC2024\AoC2024\obj\Debug\AoC2024.exe
+E:\Code\C#\AoC2024\AoC2024\obj\Debug\AoC2024.pdb
