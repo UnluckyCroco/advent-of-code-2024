@@ -2,17 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AoC2024
 {
-    internal class Program
+    internal abstract class Program
     {
         public static void Main(string[] args)
         {
-            // Console.WriteLine(Ex1A());
-            // Console.WriteLine(Ex1B());
-            // Console.WriteLine(Ex2A());
+            Console.WriteLine(Ex1A());
+            Console.WriteLine(Ex1B());
+            Console.WriteLine(Ex2A());
             Console.WriteLine(Ex2B());
+            Console.WriteLine(Ex3A());
+            Console.WriteLine(Ex3B());
         }
 
         private static void PrintList(List<int> list, string separator = " ", string end = "\n")
@@ -21,14 +24,26 @@ namespace AoC2024
             {
                 Console.Write(i + separator);
             }
+
             Console.Write(end);
         }
-        
+
+        private static void PrintList(List<string> list, string separator = " ", string end = "\n")
+        {
+            foreach (var i in list)
+            {
+                Console.Write(i + separator);
+            }
+
+            Console.Write(end);
+        }
+
         private static int Ex2A()
         {
             var lines = File.ReadAllLines("./input/2.txt").ToList();
 
-            var newLines = lines.Select(line => line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList());
+            var newLines = lines.Select(line =>
+                line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList());
 
             var counter = 0;
             foreach (var line in newLines)
@@ -48,17 +63,51 @@ namespace AoC2024
                     break;
                 }
             }
-            
+
             return counter;
-            // return lines.Select(line => line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse)
-                // .Aggregate((x, y) => Math.Abs(x - y) <= 3 && Math.Abs(x - y) >= 1 ? y : -100)).Count(val => val > 0);
+        }
+
+        private static int Ex1A()
+        {
+            var lines = File.ReadAllLines("./input/1.txt").ToList();
+
+            var firstList = new List<int>();
+            var secondList = new List<int>();
+            lines.Select(line => line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).ToList()
+                .ForEach(ball =>
+                {
+                    firstList = firstList.Append(Convert.ToInt32(ball[0])).ToList();
+                    secondList = secondList.Append(Convert.ToInt32(ball[1])).ToList();
+                });
+
+            firstList.Sort();
+            secondList.Sort();
+
+            return firstList.Select((t, i) => Math.Abs(t - secondList[i])).Sum();
+        }
+
+        private static int Ex1B()
+        {
+            var lines = File.ReadAllLines("./input/1.txt").ToList();
+
+            var firstList = new List<int>();
+            var secondList = new List<int>();
+            lines.Select(line => line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).ToList()
+                .ForEach(ball =>
+                {
+                    firstList = firstList.Append(Convert.ToInt32(ball[0])).ToList();
+                    secondList = secondList.Append(Convert.ToInt32(ball[1])).ToList();
+                });
+
+            return firstList.Select(t => secondList.FindAll(e => e == t).Count * t).Sum();
         }
         
         private static int Ex2B()
         {
             var lines = File.ReadAllLines("./input/2.txt").ToList();
 
-            var newLines = lines.Select(line => line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList()).ToList();
+            var newLines = lines.Select(line =>
+                line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToList()).ToList();
 
             return newLines.Select(Fuck).Count(ret => ret);
         }
@@ -104,46 +153,54 @@ namespace AoC2024
                 tryOther = true;
                 line = originalLine;
                 line.RemoveAt(hasErrored + 1);
-                PrintList(line);
                 i = -1;
             }
 
             return true;
         }
-
-        private static int Ex1A()
+        
+        private static int Ex3A()
         {
-            var lines = File.ReadAllLines("./input/1.txt").ToList();
+            var lines = File.ReadAllLines("./input/3.txt").ToList();
 
-            var firstList = new List<int>();
-            var secondList = new List<int>();
-            lines.Select(line => line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).ToList()
-                .ForEach(ball =>
-                {
-                    firstList = firstList.Append(Convert.ToInt32(ball[0])).ToList();
-                    secondList = secondList.Append(Convert.ToInt32(ball[1])).ToList();
-                });
-
-            firstList.Sort();
-            secondList.Sort();
-
-            return firstList.Select((t, i) => Math.Abs(t - secondList[i])).Sum();
+            return lines.Select(line => Regex.Matches(line, @"mul\(\d{1,3},\d{1,3}\)", RegexOptions.None).Cast<Match>()
+                .Select(m => m.Value.Substring(4).Replace(")", string.Empty).Split(','))
+                .Aggregate(0, (total, q) => int.Parse(q[0]) * int.Parse(q[1]) + total)).Sum();
         }
 
-        private static int Ex1B()
+        private static int Ex3B()
         {
-            var lines = File.ReadAllLines("./input/1.txt").ToList();
+            var lines = File.ReadAllLines("./input/3.txt").ToList();
 
-            var firstList = new List<int>();
-            var secondList = new List<int>();
-            lines.Select(line => line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)).ToList()
-                .ForEach(ball =>
+            var ret = lines.Select(line => Regex
+                .Matches(line, @"(mul\(\d{1,3},\d{1,3}\))|(don't\(\))|(do\(\))", RegexOptions.None).Cast<Match>()
+                .Select(m => m.Value));
+
+            var doMul = true;
+            var total = 0;
+            foreach (var s in ret.SelectMany(r => r))
+            {
+                switch (s)
                 {
-                    firstList = firstList.Append(Convert.ToInt32(ball[0])).ToList();
-                    secondList = secondList.Append(Convert.ToInt32(ball[1])).ToList();
-                });
+                    case "don't()":
+                        doMul = false;
+                        break;
+                    case "do()":
+                        doMul = true;
+                        break;
+                    default:
+                        if (doMul)
+                        {
+                            var spl = s.Substring(4).Replace(")", string.Empty).Split(',').Select(int.Parse)
+                                .Aggregate((curr, next) => curr * next);
+                            total += spl;
+                        }
 
-            return firstList.Select(t => secondList.FindAll(e => e == t).Count * t).Sum();
+                        break;
+                }
+            }
+
+            return total;
         }
     }
 }
