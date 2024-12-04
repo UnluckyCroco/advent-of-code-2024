@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,12 +11,14 @@ namespace AoC2024
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine(Ex1A());
-            Console.WriteLine(Ex1B());
-            Console.WriteLine(Ex2A());
-            Console.WriteLine(Ex2B());
-            Console.WriteLine(Ex3A());
-            Console.WriteLine(Ex3B());
+            // Console.WriteLine(Ex1A());
+            // Console.WriteLine(Ex1B());
+            // Console.WriteLine(Ex2A());
+            // Console.WriteLine(Ex2B());
+            // Console.WriteLine(Ex3A());
+            // Console.WriteLine(Ex3B());
+            // Console.WriteLine(Ex4A());
+            Console.WriteLine(Ex4B());
         }
 
         private static void PrintList(List<int> list, string separator = " ", string end = "\n")
@@ -201,6 +204,70 @@ namespace AoC2024
             }
 
             return total;
+        }
+        
+        private static int Ex4A()
+        {
+            var lines = File.ReadAllLines("./input/4.txt").ToList();
+
+            var newLines = new List<string>(from number in Enumerable.Range(0, lines[0].Length) select "");
+            var strings = new List<string>();
+            for (var i = 0; i < lines.Count; i++)
+            {
+                for (var j = 0; j < lines[i].Length; j++)
+                {
+                    newLines[j] += lines[i][j];
+                    if (j < lines[i].Length - 3)
+                    {
+                        strings.Add($"{lines[i][j]}{lines[i][j + 1]}{lines[i][j + 2]}{lines[i][j + 3]}");
+                    }
+
+                    if (i >= lines.Count - 3) continue;
+                    strings.Add($"{lines[i][j]}{lines[i + 1][j]}{lines[i + 2][j]}{lines[i + 3][j]}");
+
+                    if (j >= 3)
+                    {
+                        strings.Add($"{lines[i][j]}{lines[i + 1][j - 1]}{lines[i + 2][j - 2]}{lines[i + 3][j - 3]}");
+                    }
+                    if (j < lines[i].Length - 3)
+                    {
+                        strings.Add($"{lines[i][j]}{lines[i + 1][j + 1]}{lines[i + 2][j + 2]}{lines[i + 3][j + 3]}");
+                    }
+                }
+            }
+
+            return strings.Count(s => s == "XMAS" || s == "SAMX");
+        }
+        
+        private static int Ex4B()
+        {
+            var lines = File.ReadAllLines("./input/4.txt").ToList();
+
+            var possibilities = new List<string> {"MMSS", "MSMS", "SSMM", "SMSM"};
+            var count = 0;
+            for (var i = 0; i < lines.Count; i++)
+            {
+                if (i == 0 || i == lines.Count - 1) continue;
+
+                for (var j = 0; j < lines[i].Length; j++)
+                {
+                    if (j == 0 || j == lines[i].Length - 1 || lines[i][j] != 'A') continue;
+
+                    var xmas = "";
+                    for (var k = -1; k < 2; k++)
+                    {
+                        for (var l = -1; l < 2; l++)
+                        {
+                            if (Math.Abs(k + l) == 1 || (k == 0 && l == 0)) continue;
+                            xmas += lines[i + k][j + l];
+                        }
+                    }
+
+                    if (possibilities.Contains(xmas)) count++;
+                }
+            }
+            
+            return count;
         }
     }
 }
