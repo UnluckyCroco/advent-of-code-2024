@@ -18,8 +18,10 @@ namespace AoC2024
             // Console.WriteLine(Ex3B());
             // Console.WriteLine(Ex4A());
             // Console.WriteLine(Ex4B());
-            Console.WriteLine(Ex5A());
-            Console.WriteLine(Ex5B());
+            // Console.WriteLine(Ex5A());
+            // Console.WriteLine(Ex5B());
+            // Console.WriteLine(Ex6A());
+            Console.WriteLine(Ex6B());
         }
 
         private static void PrintList(List<int> list, string separator = " ", string end = "\n")
@@ -352,6 +354,170 @@ namespace AoC2024
                 }
                 
                 return hasFaulted ? spl[spl.Count / 2] : 0;
+            }
+        }
+        
+        private static int Ex6A()
+        {
+            var lines = File.ReadAllLines("./input/6.txt").Select(s => s.ToCharArray().ToList()).ToList();
+
+            var x = 0;
+            var y = 0;
+            for (var i = 0; i < lines.Count; i++)
+            {
+                if ((x = lines[i].IndexOf('^')) <= 0) continue;
+                y = i;
+                break;
+            }
+
+            var yLen = lines.Count - 1;
+            var xLen = lines[0].Count - 1;
+            
+            var looping = true;
+            var rotator = 0;
+            var direction = new List<int> { (int)Math.Sin(-1 / (2 / Math.PI)), (int)Math.Sin(0 / (2 / Math.PI))};
+            
+            // {1, 0} -> {0, 1} -> {-1, 0} -> {0, -1} -> {1, 0}
+            Console.WriteLine($"({y}, {x})");
+            
+            while (looping)
+            {
+                Console.WriteLine(direction[0] + " " + direction[1]);
+                var newY = y + direction[0];
+                var newX = x + direction[1];
+                if (newY > yLen || newY < 0) looping = false;
+                else if (newX > xLen || newX < 0) looping = false;
+                else if (lines[newY][newX] == '#')
+                {
+                    rotator++;
+                    direction = new List<int> { (int)Math.Sin((rotator - 1) / (2 / Math.PI)), (int)Math.Sin(rotator / (2 / Math.PI))};
+                }
+                lines[y][x] = 'X';
+                y += direction[0];
+                x += direction[1];
+            }
+            
+            
+            foreach (var chars in lines)
+            {
+                foreach (var c in chars)
+                {
+                    Console.Write(c);
+                }
+                Console.WriteLine();
+            }
+
+            return lines.Select(n => n.Count(m => m == 'X')).Sum();
+        }
+        
+        private static List<List<char>> Ex6ACopy()
+        {
+            var lines = File.ReadAllLines("./input/6.txt").Select(s => s.ToCharArray().ToList()).ToList();
+
+            var x = 0;
+            var y = 0;
+            for (var i = 0; i < lines.Count; i++)
+            {
+                if ((x = lines[i].IndexOf('^')) <= 0) continue;
+                y = i;
+                break;
+            }
+            
+            var yLen = lines.Count - 1;
+            var xLen = lines[0].Count - 1;
+            
+            var looping = true;
+            var rotator = 0;
+            var direction = new List<int> { (int)Math.Sin(-1 / (2 / Math.PI)), (int)Math.Sin(0 / (2 / Math.PI))};
+            
+            while (looping)
+            {
+                var newY = y + direction[0];
+                var newX = x + direction[1];
+                if (newY > yLen || newY < 0) looping = false;
+                else if (newX > xLen || newX < 0) looping = false;
+                else if (lines[newY][newX] == '#')
+                {
+                    rotator++;
+                    direction = new List<int> { (int)Math.Sin((rotator - 1) / (2 / Math.PI)), (int)Math.Sin(rotator / (2 / Math.PI))};
+                }
+                lines[y][x] = 'X';
+                y += direction[0];
+                x += direction[1];
+            }
+
+            return lines;
+        }
+        
+        private static int Ex6B()
+        {
+            var lines = Ex6ACopy();
+            
+            var x = 86;
+            var y = 55;
+
+            var yLen = lines.Count - 1;
+            var xLen = lines[0].Count - 1;
+            
+
+            var count = 0;
+            
+            for (var i = 0; i < lines.Count; i++)
+            {
+                for (var i1 = 0; i1 < lines[i].Count; i1++)
+                {
+                    if (lines[i][i1] != 'X') continue;
+                    if (i == y && i1 == x) continue;
+                    var newField = new List<List<char>>();
+                    foreach (var chars in lines)
+                    {
+                        newField.Add(new List<char>());
+                        foreach (var c in chars)
+                        {
+                            newField.Last().Add(c);
+                        }
+
+                    }
+
+                    newField[i][i1] = '#';
+                    var loops = Loops(y, x, newField, yLen, xLen);
+                    if (loops) count++;
+                }
+            }
+
+            return count;
+        }
+        
+        private static bool Loops(int y, int x, List<List<char>> field, int yLen, int xLen)
+        {
+            (int y, int x) direction = ((int)Math.Sin(-1 / (2 / Math.PI)), (int)Math.Sin(0 / (2 / Math.PI)));
+            var passedCoords = new List<(int y, int x, (int y, int x) direction)>{(y, x, direction)};
+            var rotator = 0;
+            while (true)
+            {
+                var newY = y + direction.y;
+                var newX = x + direction.x;
+                if (newY > yLen || newY < 0) return false;
+                if (newX > xLen || newX < 0) return false;
+                (int y, int x, (int y, int x) direction) newCoord;
+                
+                while (field[newY][newX] == '#')
+                {
+                    rotator++;
+                    direction = ((int)Math.Sin((rotator - 1) / (2 / Math.PI)), (int)Math.Sin(rotator / (2 / Math.PI)));
+                    newY = y + direction.y;
+                    newX = x + direction.x;
+                    newCoord = (y, x, direction);
+                    if (passedCoords.Contains(newCoord)) return true;
+                    passedCoords.Add(newCoord);
+                }
+                y += direction.y;
+                x += direction.x;
+                field[y][x] = '0';
+
+                newCoord = (y, x, direction);
+                if (passedCoords.Contains(newCoord)) return true;
+                passedCoords.Add(newCoord);
             }
         }
     }
