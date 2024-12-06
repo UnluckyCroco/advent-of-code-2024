@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -18,7 +17,9 @@ namespace AoC2024
             // Console.WriteLine(Ex3A());
             // Console.WriteLine(Ex3B());
             // Console.WriteLine(Ex4A());
-            Console.WriteLine(Ex4B());
+            // Console.WriteLine(Ex4B());
+            Console.WriteLine(Ex5A());
+            Console.WriteLine(Ex5B());
         }
 
         private static void PrintList(List<int> list, string separator = " ", string end = "\n")
@@ -268,6 +269,90 @@ namespace AoC2024
             }
             
             return count;
+        }
+        
+        private static int Ex5A()
+        {
+            var lines = File.ReadAllLines("./input/5.txt").ToList();
+
+            var cut = lines.IndexOf("");
+            
+            var dict = new Dictionary<int, List<int>>();
+            var rules = lines.GetRange(0, cut);
+            rules.ForEach(rule =>
+            {
+                var spl = rule.Split('|').Select(int.Parse).ToList();
+                
+                if (dict.ContainsKey(spl[1])) dict[spl[1]].Add(spl[0]);
+                else dict[spl[1]] = new List<int>{ spl[0]};
+            });
+            
+            var updates = lines.GetRange(cut + 1, lines.Count - 1 - cut);
+
+            return updates.Sum(Check);
+
+            int Check(string update)
+            {
+                var spl = update.Split(',').Select(int.Parse).ToList();
+                
+                foreach (var s in spl.Select((value, i) => new {i, value}))
+                {
+                    for (var j = s.i + 1; j < spl.Count; j++)
+                    {
+                        var j1 = j;
+                        var tr = dict[s.value].FirstOrDefault(t => t == spl[j1]);
+                        if (tr == 0) continue;
+                        return 0;
+                    }
+                }
+
+                return spl[spl.Count / 2];
+            }
+        }
+        
+        private static int Ex5B()
+        {
+            var lines = File.ReadAllLines("./input/5.txt").ToList();
+        
+            var cut = lines.IndexOf("");
+            
+            var dict = new Dictionary<int, List<int>>();
+            var rules = lines.GetRange(0, cut);
+            rules.ForEach(rule =>
+            {
+                var spl = rule.Split('|').Select(int.Parse).ToList();
+                
+                if (dict.ContainsKey(spl[1])) dict[spl[1]].Add(spl[0]);
+                else dict[spl[1]] = new List<int>{ spl[0] };
+            });
+            
+            var updates = lines.GetRange(cut + 1, lines.Count - 1 - cut);
+            return updates.Select(Check).Sum();
+        
+            int Check(string update)
+            {
+                var spl = update.Split(',').Select(int.Parse).ToList();
+        
+                var hasFaulted = false;
+                for (var i = 0; i < spl.Count; i++)
+                {
+                    var curr = spl[i];
+
+                    for (var j = i + 1; j < spl.Count; j++)
+                    {
+                        var j1 = j;
+                        var tr = dict[curr].FirstOrDefault(t => t == spl[j1]);
+                        if (tr == 0) continue;
+                        spl[i] = spl[j];
+                        spl[j] = curr;
+                        hasFaulted = true;
+                        i--;
+                        break;
+                    }
+                }
+                
+                return hasFaulted ? spl[spl.Count / 2] : 0;
+            }
         }
     }
 }
