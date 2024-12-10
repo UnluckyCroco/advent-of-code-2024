@@ -28,7 +28,9 @@ namespace AoC2024
             // Console.WriteLine(Ex8A());
             // Console.WriteLine(Ex8B());
             // Console.WriteLine(Ex9A());
-            Console.WriteLine(Ex9B());
+            // Console.WriteLine(Ex9B());
+            // Console.WriteLine(Ex10A());
+            Console.WriteLine(Ex10B());
         }
 
         private static void PrintList(List<int> list, string separator = " ", string end = "\n")
@@ -913,6 +915,100 @@ namespace AoC2024
             }
             
             return sum;
+        }
+
+        private static int Ex10A()
+        {
+            var lines = File.ReadAllLines("./input/10.txt").ToList();
+
+            var yLen = lines.Count;
+            var xLen = lines[0].Length;
+            var trails = new List<(int y, int x)>();
+            
+            for (var i = 0; i < lines.Count; i++)
+            {
+                for (var i1 = 0; i1 < lines[i].Length; i1++)
+                {
+                    if (lines[i][i1] == '0')
+                    {
+                        trails.AddRange(TrailFinder((i, i1), 0).Distinct());
+                    }
+                }
+            }
+
+            return trails.Count;
+            
+            List<(int y, int x)> TrailFinder((int y, int x) trailStart, int height)
+            {
+                var testTrails = new List<(int y, int x)>();
+                
+                if (height == 9)
+                {
+                    return new List<(int y, int x)>{trailStart};
+                }
+                
+                for (var y = -1; y < 2; y++)
+                {
+                    if (y + trailStart.y >= yLen || y + trailStart.y < 0) continue;
+                    for (var x = -1; x < 2; x++)
+                    {
+                        if (x + trailStart.x >= xLen || x + trailStart.x < 0 || Math.Abs(x + y) % 2 != 1) continue;
+                        if (lines[y + trailStart.y][x + trailStart.x] - '0' == height + 1)
+                        {
+                            testTrails.AddRange(TrailFinder((y + trailStart.y, x + trailStart.x), height + 1));
+                        }
+                    }
+                }
+
+                return testTrails;
+            }
+        }
+        
+        private static int Ex10B()
+        {
+            var lines = File.ReadAllLines("./input/10.txt").ToList();
+
+            var yLen = lines.Count;
+            var xLen = lines[0].Length;
+            var trails = new List<(int y, int x)>();
+            
+            for (var i = 0; i < lines.Count; i++)
+            {
+                for (var i1 = 0; i1 < lines[i].Length; i1++)
+                {
+                    if (lines[i][i1] == '0')
+                    {
+                        trails.AddRange(TrailFinder((i, i1), 0));
+                    }
+                }
+            }
+
+            return trails.Count;
+            
+            List<(int y, int x)> TrailFinder((int y, int x) trailStart, int height)
+            {
+                var testTrails = new List<(int y, int x)>();
+                
+                if (height == 9)
+                {
+                    return new List<(int y, int x)>{trailStart};
+                }
+                
+                for (var y = -1; y < 2; y++)
+                {
+                    if (y + trailStart.y >= yLen || y + trailStart.y < 0) continue;
+                    for (var x = -1; x < 2; x++)
+                    {
+                        if (x + trailStart.x >= xLen || x + trailStart.x < 0 || Math.Abs(x + y) % 2 != 1) continue;
+                        if (lines[y + trailStart.y][x + trailStart.x] - '0' == height + 1)
+                        {
+                            testTrails.AddRange(TrailFinder((y + trailStart.y, x + trailStart.x), height + 1));
+                        }
+                    }
+                }
+
+                return testTrails;
+            }
         }
     }
 }
