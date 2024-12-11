@@ -30,7 +30,9 @@ namespace AoC2024
             // Console.WriteLine(Ex9A());
             // Console.WriteLine(Ex9B());
             // Console.WriteLine(Ex10A());
-            Console.WriteLine(Ex10B());
+            // Console.WriteLine(Ex10B());
+            // Console.WriteLine(Ex11A());
+            Console.WriteLine(Ex11B());
         }
 
         private static void PrintList(List<int> list, string separator = " ", string end = "\n")
@@ -1009,6 +1011,114 @@ namespace AoC2024
 
                 return testTrails;
             }
+        }
+
+        private class Stone
+        {
+            public long Value { get; private set; }
+            public int Depth { get; private set; }
+            public List<Stone> Children = new List<Stone>();
+
+            public Stone(long value, int depth)
+            {
+                Value = value;
+                Depth = depth;
+            }
+        }
+        
+        private static int Ex11A()
+        {
+            var line = File.ReadAllLines("./input/11.txt").ToList()[0];
+
+            var l = new List<Stone>();
+            l.AddRange(line.Split(' ').Select(v => new Stone(int.Parse(v), 0)));
+
+            var tempChildren = new List<Stone>(l);
+
+            for (var i = 0; i < 25; i++)
+            {
+                foreach (var i1 in tempChildren)
+                {
+                    var str = i1.Value.ToString();
+                    var len = str.Length;
+                    if (len % 2 == 0)
+                    {
+                        i1.Children.Add(new Stone(int.Parse(str.Substring(0, len / 2)), i));
+                        i1.Children.Add(new Stone(int.Parse(str.Substring(len / 2)), i));
+                        continue;
+                    }
+
+                    if (str == "0")
+                    {
+                        i1.Children.Add(new Stone(1, i));
+                        continue;
+                    }
+                    
+                    i1.Children.Add(new Stone(i1.Value * 2024, i));
+                }
+                tempChildren = tempChildren.SelectMany(b => b.Children).ToList();
+            }
+
+            return tempChildren.Count;
+        }
+        
+        private static long Ex11B()
+        {
+            var line = File.ReadAllLines("./input/11.txt").ToList()[0];
+
+            var dict = new Dictionary<long, List<long>>();
+            var stones = line.Split(' ').ToDictionary(long.Parse, se => 1L);
+
+            for (var i = 0; i < 75; i++)
+            {
+                var stonesCopy = new Dictionary<long, long>(stones);
+                
+                foreach (var stonesKey in stonesCopy.Keys)
+                {
+                    if (stonesCopy[stonesKey] == 0) continue;
+                    var v = stonesKey;
+                    var amount = stonesCopy[stonesKey];
+                    
+                    if (dict.TryGetValue(v, out var existing))
+                    {
+                        foreach (var l in existing)
+                        {
+                            stones[l] += amount;
+                        }
+                        stones[v] -= amount;
+
+                        continue;
+                    }
+                
+                    var str = v.ToString();
+                    var len = str.Length;
+                    if (len % 2 == 0)
+                    {
+                        var first = long.Parse(str.Substring(0, len / 2));
+                        var second = long.Parse(str.Substring(len / 2));
+                        dict.Add(v, new List<long> { first, second });
+                        if (stones.ContainsKey(first)) stones[first] += amount;
+                        else stones.Add(first, amount);
+                        if (stones.ContainsKey(second)) stones[second] += amount;
+                        else stones.Add(second, amount);
+                    }
+                    else if (str == "0")
+                    {
+                        dict.Add(v, new List<long> { 1 });
+                        stones.Add(1, amount);
+                    }
+                    else
+                    {
+                        var newValue = v * 2024;
+                        dict.Add(v, new List<long> { newValue });
+                        if (stones.ContainsKey(newValue)) stones[newValue] += amount;
+                        else stones.Add(newValue, amount);
+                    }
+                    stones[v] -= amount;
+                }
+            }
+
+            return stones.Sum(kvp => kvp.Value);
         }
     }
 }
