@@ -1,0 +1,44 @@
+﻿
+ RRRR
+ RRRR
+   RRR
+   R
+  
+.......  
+.RRRR..
+.RRRR..
+...RRR.
+...R...
+.......
+
+oooooo.  
+oRRRRo.
+oRRRRoo
+oooRRRo
+..oRooo
+..ooo..
+
+
+ RR
+  R
+ RRRR
+ RRRR
+   RRR
+   R
+  
+ R RR
+ R  R
+ RRRRRR
+   RRRR
+     RRR
+     R
+    
+    
+ R RR
+ R  R
+ RRRRRR
+   RRRR
+   RRRRR
+     R
+    
+  

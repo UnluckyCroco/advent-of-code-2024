@@ -32,7 +32,9 @@ namespace AoC2024
             // Console.WriteLine(Ex10A());
             // Console.WriteLine(Ex10B());
             // Console.WriteLine(Ex11A());
-            Console.WriteLine(Ex11B());
+            // Console.WriteLine(Ex11B());
+            // Console.WriteLine(Ex12A());
+            Console.WriteLine(Ex12B());
         }
 
         private static void PrintList(List<int> list, string separator = " ", string end = "\n")
@@ -1119,6 +1121,159 @@ namespace AoC2024
             }
 
             return stones.Sum(kvp => kvp.Value);
+        }
+        
+        private static long Ex12A()
+        {
+            var lines = File.ReadAllLines("./input/12.txt").ToList();
+
+            var passed = new List<(int y, int x)>();
+            var nodes = new Dictionary<(int y, int x), int>();
+            var total = 0;
+            var yLen = lines.Count;
+            var xLen = lines[0].Length;
+            
+            for (var i = 0; i < lines.Count; i++)
+            {
+                for (var i1 = 0; i1 < lines[i].Length; i1++)
+                {
+                    if (passed.Contains((i, i1))) continue;
+                    var c = lines[i][i1];
+                    
+                    nodes.Clear();
+                    nodes.Add((i, i1), 4);
+                    ScanArea(c, i, i1);
+                    total += nodes.Select(z => z.Value).Sum() * nodes.Count;
+                    passed.AddRange(nodes.Keys);
+                }
+            }
+
+            return total;
+            
+            void ScanArea(char f, int y, int x)
+            {
+                for (var u = -1; u < 2; u++)
+                {
+                    var uy = u + y;
+                    if (uy >= yLen || uy < 0) continue;
+                    for (var v = -1; v < 2; v++)
+                    {
+                        var vx = v + x;
+                        if (Math.Abs(u + v) % 2 != 1) continue;
+                        if (vx >= xLen || vx < 0) continue;
+                        if (nodes.ContainsKey((uy, vx))) continue;
+                        if (lines[uy][vx] != f) continue;
+
+                        var newNodeTouch = 4;
+                        for (var o = -1; o < 2; o++)
+                        {
+                            var ouy = o + uy;
+                            for (var p = -1; p < 2; p++)
+                            {
+                                var pvx = p + vx;
+                                if (Math.Abs(o + p) % 2 != 1) continue;
+
+                                if (! nodes.ContainsKey((ouy, pvx))) continue;
+                                
+                                newNodeTouch--;
+                                nodes[(ouy, pvx)]--;
+                            }
+                        }
+                        
+                        nodes.Add((uy, vx), newNodeTouch);
+
+                        ScanArea(f, uy, vx);
+                    }
+                }
+            }
+        }
+        
+        private static long Ex12B()
+        {
+            var lines = File.ReadAllLines("./input/test.txt").ToList();
+
+            var passed = new List<(int y, int x)>();
+            var nodes = new Dictionary<(int y, int x), int>();
+            // var total = 0;
+            var yLen = lines.Count;
+            var xLen = lines[0].Length;
+            var startLocs = new List<(int y, int x, int area)>();
+            
+            for (var i = 0; i < lines.Count; i++)
+            {
+                for (var i1 = 0; i1 < lines[i].Length; i1++)
+                {
+                    if (passed.Contains((i, i1))) continue;
+                    var c = lines[i][i1];
+                    
+                    nodes.Clear();
+                    nodes.Add((i, i1), 4);
+                    ScanArea(c, i, i1);
+                    startLocs.Add((nodes.Keys.First().y, nodes.Keys.First().x, nodes.Count));
+                    passed.AddRange(nodes.Keys);
+                }
+            }
+
+            foreach (var startLoc in startLocs)
+            {
+                (int y, int x) direction = (0, 1);
+                var sides = 1;
+                while (true)
+                {
+                    // lines[startLoc.y + direction.y][startLoc.x + direction.x];
+                }
+            }
+            // direction = (direction.x, direction.y * -1);
+            // diagonal = (diagonal.x, direction.x == 0 ? direction.y : direction.x)
+            // 0, 1 -> -1, 1
+            // 1, 0 -> 1, 1
+            // 0, -1 -> 1, -1
+            // -1, 0 -> -1, -1
+            
+            return 0;
+            
+            void ScanArea(char f, int y, int x)
+            {
+                for (var u = -1; u < 2; u++)
+                {
+                    var uy = u + y;
+                    if (uy >= yLen || uy < 0) continue;
+                    for (var v = -1; v < 2; v++)
+                    {
+                        var vx = v + x;
+                        if (Math.Abs(u + v) % 2 != 1) continue;
+                        if (vx >= xLen || vx < 0) continue;
+                        if (nodes.ContainsKey((uy, vx))) continue;
+                        if (lines[uy][vx] != f) continue;
+
+                        var newNodeTouch = 4;
+                        for (var o = -1; o < 2; o++)
+                        {
+                            var ouy = o + uy;
+                            for (var p = -1; p < 2; p++)
+                            {
+                                var pvx = p + vx;
+                                if (Math.Abs(o + p) % 2 != 1) continue;
+
+                                if (! nodes.ContainsKey((ouy, pvx))) continue;
+                                
+                                newNodeTouch--;
+                                nodes[(ouy, pvx)]--;
+                            }
+                        }
+                        nodes.Add((uy, vx), newNodeTouch);
+                        ScanArea(f, uy, vx);
+                    }
+                }
+            }
+        }
+        
+        
+        private static long Template()
+        {
+            var lines = File.ReadAllLines("./input/[x].txt").ToList();
+
+            return 0;
         }
     }
 }
