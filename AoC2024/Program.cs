@@ -1190,14 +1190,13 @@ namespace AoC2024
         
         private static long Ex12B()
         {
-            var lines = File.ReadAllLines("./input/test.txt").ToList();
+            var lines = File.ReadAllLines("./input/12.txt").ToList();
 
             var passed = new List<(int y, int x)>();
             var nodes = new Dictionary<(int y, int x), int>();
-            // var total = 0;
+            var total = 0;
             var yLen = lines.Count;
             var xLen = lines[0].Length;
-            var startLocs = new List<(int y, int x, int area)>();
             
             for (var i = 0; i < lines.Count; i++)
             {
@@ -1207,30 +1206,14 @@ namespace AoC2024
                     var c = lines[i][i1];
                     
                     nodes.Clear();
-                    nodes.Add((i, i1), 4);
+                    nodes.Add((i, i1), CheckCorners(c, i, i1));
                     ScanArea(c, i, i1);
-                    startLocs.Add((nodes.Keys.First().y, nodes.Keys.First().x, nodes.Count));
+                    total += nodes.Select(z => z.Value).Sum() * nodes.Count;
                     passed.AddRange(nodes.Keys);
                 }
             }
 
-            foreach (var startLoc in startLocs)
-            {
-                (int y, int x) direction = (0, 1);
-                var sides = 1;
-                while (true)
-                {
-                    // lines[startLoc.y + direction.y][startLoc.x + direction.x];
-                }
-            }
-            // direction = (direction.x, direction.y * -1);
-            // diagonal = (diagonal.x, direction.x == 0 ? direction.y : direction.x)
-            // 0, 1 -> -1, 1
-            // 1, 0 -> 1, 1
-            // 0, -1 -> 1, -1
-            // -1, 0 -> -1, -1
-            
-            return 0;
+            return total;
             
             void ScanArea(char f, int y, int x)
             {
@@ -1245,26 +1228,41 @@ namespace AoC2024
                         if (vx >= xLen || vx < 0) continue;
                         if (nodes.ContainsKey((uy, vx))) continue;
                         if (lines[uy][vx] != f) continue;
+                        
+                        nodes.Add((uy, vx), CheckCorners(f, uy, vx));
 
-                        var newNodeTouch = 4;
-                        for (var o = -1; o < 2; o++)
-                        {
-                            var ouy = o + uy;
-                            for (var p = -1; p < 2; p++)
-                            {
-                                var pvx = p + vx;
-                                if (Math.Abs(o + p) % 2 != 1) continue;
-
-                                if (! nodes.ContainsKey((ouy, pvx))) continue;
-                                
-                                newNodeTouch--;
-                                nodes[(ouy, pvx)]--;
-                            }
-                        }
-                        nodes.Add((uy, vx), newNodeTouch);
                         ScanArea(f, uy, vx);
                     }
                 }
+            }
+
+            int CheckCorners(char f, int y, int x)
+            {
+                (int y, int x) direction = (-1, 0);
+                var count = 0;
+                
+                for (var i = 0; i < 4; i++)
+                {
+                    var sideA = true;
+                    var sideB = true;
+                    var sideD = true;
+                    if (direction.y + y >= yLen || direction.y + y < 0 || direction.x + x >= xLen || direction.x + x < 0) sideA = false;
+                    else if (lines[y + direction.y][x + direction.x] != f) sideA = false;
+                    
+                    (int y, int x) diagonal = (direction.y + direction.x, direction.x - direction.y);
+                    
+                    if (diagonal.y + y >= yLen || diagonal.y + y < 0 || diagonal.x + x >= xLen || diagonal.x + x < 0) sideD = false;
+                    else if (lines[y + diagonal.y][x + diagonal.x] != f) sideD = false;
+                    
+                    direction = (direction.x, direction.y * -1);
+
+                    if (direction.y + y >= yLen || direction.y + y < 0 || direction.x + x >= xLen || direction.x + x < 0) sideB = false;
+                    else if (lines[y + direction.y][x + direction.x] != f) sideB = false;
+
+                    if ((!sideA && !sideB) || (sideA && sideB && !sideD)) count++;
+                }
+
+                return count;
             }
         }
         
